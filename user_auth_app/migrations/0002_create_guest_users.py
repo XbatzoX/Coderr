@@ -11,3 +11,17 @@ def create_guests(apps, schema_editor):
 
     if not CustomUser.objects.filter(username="kevin").exists():
         CustomUser.objects.create_user(username="kevin", email="guest_business@test.de", password="asdasd24", type="business")
+
+def remove_guests(apps, schema_editor):
+    CustomUser = apps.get_model("user_auth_app", "CustomUser")
+    CustomUser.objects.filter(username__in=["andrey", "kevin"]).delete()
+
+class Migration(migrations.Migration):
+    dependencies = [
+        ("user_auth_app", "0001_initial"),
+    ]
+
+    operations = [
+        migrations.RunPython(create_guests, remove_guests),
+    ]
+
