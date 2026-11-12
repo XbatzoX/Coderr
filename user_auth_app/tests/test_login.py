@@ -10,5 +10,19 @@ class LoginTests(APITestCase):
         self.user = CustomUser.objects.create_user(
             username="loginuser",
             email="login@example.de",
-            password="ValidPassword123!"
+            password="ValidPassword123!",
+            type="business"
         )
+        self.valid_user = {
+            "username": "loginuser",
+            "password": "ValidPassword123!"
+        }
+
+    def test_login_success_200(self):
+        response = self.client.post(self.url, self.valid_user, format="json")
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertIn("token", response.data)
+        self.assertEqual(response.data["username"], "loginuser")
+        self.assertEqual(response.data["email"], "login@example.de")
+        self.assertEqual(response.data["user_id"], self.user.id)
