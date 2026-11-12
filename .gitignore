@@ -63,4 +63,4 @@ Frontend/
 # Migrations
 **/migrations/000*.py
 
-!**/migrations/*create_guest_users.py
+
