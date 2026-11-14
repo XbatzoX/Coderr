@@ -63,4 +63,6 @@ Frontend/
 # Migrations
 **/migrations/000*.py
 
+# Media folder
+media/
 
