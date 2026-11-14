@@ -77,6 +77,39 @@ class ProfiledetailTests(APITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
-           
+class BusinessProfileListTests(APITestCase):
+    def setUp(self):
+        self.url = reverse("business-profile-list")
+        self.customer_user = CustomUser.objects.create_user(
+            username = "customer1",
+            email = "customer1@example.com",
+            password = "validPassword123!",
+            type = "customer"
+        )
+        self.business_user = CustomUser.objects.create_user(
+            username = "business1",
+            email = "business1@example.com",
+            password = "ValidPassword123!",
+            type = "business"
+        )
+        self.token = Token.objects.create(user=self.customer_user)
 
-        
+    def test_get_business_profiles_success_200(self):
+        self.client.credentials(HTTP_AUTHORIZATION="Token " + self.token.key)
+        response = self.client.get(self.url)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        usernames = [profile["username"] for profile in response.data]
+        self.assertIn("business1", usernames)
+        self.assertNotIn("customer1", usernames)
+
+        business_data = next(p for p in response.data if p["username"] == "business1")
+        self.assertEqual(business_data["type"], "business")
+        self.assertEqual(business_data["first_name"], "")
+        self.assertNotIn("email", business_data)
+
+    def test_get_business_profiles_unauthenticated_401(self):
+        response = self.client.get(self.url)
+
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+    
