@@ -112,4 +112,41 @@ class BusinessProfileListTests(APITestCase):
         response = self.client.get(self.url)
 
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+class CustomerProfileListTests(APITestCase):
+    def setUp(self):
+        self.url = reverse("customer-profile-list")
+        self.customer_user = CustomUser.objects.create_user(
+            username="customer1",
+            email="customer1@example.com",
+            password="ValidPassword123!",
+            type="customer"
+        )
+        self.business_user = CustomUser.objects.create_user(
+            username="business1",
+            email="business1@example.com",
+            password="ValidPassword123!",
+            type="business"
+        )
+        self.token = Token.objects.create(user=self.business_user)
+
+    def test_get_customer_profiles_success_200(self):
+        self.client.credentials(HTTP_AUTHORIZATION="Token " + self.token.key)
+        response = self.client.get(self.url)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        usernames = [profile["username"] for profile in response.data]
+        self.assertIn("customer1", usernames)
+        self.assertNotIn("business1", usernames)
+
+        customer_data = next(p for p in response.data if p["username"] == "customer1")
+        self.assertEqual(customer_data["type"], "customer")
+        self.assertEqual(customer_data["first_name"], "")
+        self.assertIn("uploaded_at", customer_data)
+        self.assertNotIn("email", customer_data)
+
+    def test_get_customer_profiles_unauthenticated_401(self):
+        response = self.client.get(self.url)
+
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
     
