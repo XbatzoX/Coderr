@@ -200,3 +200,39 @@ class OfferDetailTests(APITestCase):
         response = self.client.delete(invalid_url)
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
+class OfferDetailItemTests(APITestCase):
+    def setUp(self):
+        self.user = CustomUser.objects.create_user(
+            username="item_user", email="item@test.de", password="pw", type="customer"
+        )
+        self.token = Token.objects.create(user=self.user)
+        offer = Offer.objects.create(user=self.user, title="Web Pack", description="Desc")
+        self.detail = OfferDetail.objects.create(
+            offer=offer, title="Basic Design", revisions=2, 
+            delivery_time_in_days=5, price=100, features=["Logo Design"], offer_type = "basic"
+        )
+        self.url = reverse("offerdetail-item", kwargs={"pk": self.detail.id})
+
+    def test_get_offerdetail_item_200(self):
+        self.client.credentials(HTTP_AUTHORIZATION="Token " + self.token.key)
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["title"], "Basic Design")
+        self.assertEqual(response.data["offer_type"], "basic")
+
+    def test_get_offerdetail_item_unauthenticated_401(self):
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_get_offerdetail_item_not_found_404(self):
+        self.client.credentials(HTTP_AUTHORIZATION="Token " + self.token.key)
+        invalid_url = reverse("offerdetail-item", kwargs={"pk": 999})
+        response = self.client.get(invalid_url)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    @patch("offers_app.api.views.OfferDetailItemView.get_object")
+    def test_get_offerdetail_item_internal_server_error_500(self, mock_get_object):
+        self.client.credentials(HTTP_AUTHORIZATION="Token " + self.token.key)
+        mock_get_object.side_effect = Exception("Database failure")
+        with self.assertRaises(Exception):
+            self.client.get(self.url)

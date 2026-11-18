@@ -2,8 +2,8 @@ from django.db.models import Min
 from rest_framework import generics, filters
 from rest_framework.exceptions import ValidationError
 from rest_framework.permissions import IsAuthenticated
-from offers_app.models import Offer
-from .serializers import OfferListSerializer, OfferCreateSerializer, OfferRetrieveSerializer
+from offers_app.models import Offer, OfferDetail
+from .serializers import OfferListSerializer, OfferCreateSerializer, OfferRetrieveSerializer, OfferDetailSerializer
 from .pagination import OfferPagination
 from .permissions import IsBusinessUserOrReadOnly, IsOfferOwnerOrReadOnly
 
@@ -67,3 +67,8 @@ class OfferDetailView(generics.RetrieveUpdateDestroyAPIView):
         if self.request.method in ["PATCH", "PUT"]:
             return OfferCreateSerializer
         return OfferRetrieveSerializer
+
+class OfferDetailItemView(generics.RetrieveAPIView):
+    queryset = OfferDetail.objects.all()
+    serializer_class = OfferDetailSerializer
+    permission_classes = [IsAuthenticated]
