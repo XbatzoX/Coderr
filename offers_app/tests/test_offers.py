@@ -175,5 +175,28 @@ class OfferDetailTests(APITestCase):
         response = self.client.patch(invalid_url, {"title": "unknown"}, format="json")
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
+    def test_delete_offer_owner_204(self):
+        self.client.credentials(HTTP_AUTHORIZATION="Token " + self.token.key)
+        response = self.client.delete(self.url)
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+        self.assertFalse(Offer.objects.filter(id=self.offer.id).exists())
 
+    def test_delete_offer_unauthenticated_401(self):
+        response = self.client.delete(self.url)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_delete_offer_not_owner_403(self):
+        other = CustomUser.objects.create_user(
+            username="del_other", email="test_del@test.de", password="pw", type="business"
+        )
+        other_token = Token.objects.create(user=other)
+        self.client.credentials(HTTP_AUTHORIZATION="Token " + other_token.key)
+        response = self.client.delete(self.url)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_delete_offer_not_found_404(self):
+        self.client.credentials(HTTP_AUTHORIZATION="Token " + self.token.key)
+        invalid_url = reverse("offer-detail", kwargs={"pk": 999})
+        response = self.client.delete(invalid_url)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
