@@ -5,7 +5,7 @@ from rest_framework.permissions import IsAuthenticated
 from offers_app.models import Offer
 from .serializers import OfferListSerializer, OfferCreateSerializer, OfferRetrieveSerializer
 from .pagination import OfferPagination
-from .permissions import IsBusinessUserOrReadOnly
+from .permissions import IsBusinessUserOrReadOnly, IsOfferOwnerOrReadOnly
 
 class OfferListView(generics.ListCreateAPIView):
     permission_classes = [IsBusinessUserOrReadOnly]
@@ -59,7 +59,11 @@ class OfferListView(generics.ListCreateAPIView):
         except ValueError:
             raise ValidationError({"max_delivery_time": "Must be a valid integer."})
 
-class OfferDetailView(generics.RetrieveAPIView):
+class OfferDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Offer.objects.all()
-    serializer_class = OfferRetrieveSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsOfferOwnerOrReadOnly]
+
+    def get_serializer_class(self):
+        if self.request.method in ["PATCH", "PUT"]:
+            return OfferCreateSerializer
+        return OfferRetrieveSerializer

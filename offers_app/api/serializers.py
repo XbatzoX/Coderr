@@ -81,6 +81,11 @@ class OfferCreateSerializer(serializers.ModelSerializer):
         ]
 
     def validate_details(self, value):
+        if self.instance is None:
+            return self._validate_create_details(value)
+        return self._validate_patch_details(value)
+
+    def _validate_create_details(self, value):
         if len(value) != 3:
             raise serializers.ValidationError("An offer must contain exactly 3 details.")
 
@@ -91,6 +96,12 @@ class OfferCreateSerializer(serializers.ModelSerializer):
             )
         return value
 
+    def _validate_patch_details(self, value):
+        for detail in value:
+            if not detail.get("offer_type"):
+                raise serializers.ValidationError("offer_type is required to identify details")
+        return value
+
     def create(self, validated_data):
         details_data = validated_data.pop("details")
         offer = Offer.objects.create(**validated_data)
@@ -99,6 +110,23 @@ class OfferCreateSerializer(serializers.ModelSerializer):
             OfferDetail.objects.create(offer=offer, **detail_data)
 
         return offer
+
+    def update(self, instance, validated_data):
+        details_data = validated_data.pop("details", None)
+        instance = super().update(instance, validated_data)
+        if details_data is not None:
+            self._update_details(instance, details_data)
+        return instance
+
+    def _update_details(self, instance, details_data):
+        for detail_data in details_data:
+            offer_type = detail_data.get("offer_type")
+            detail_obj = instance.details.filter(offer_type=offer_type).first()
+            if not detail_obj:
+                raise serializers.ValidationError(f"Detail with type {offer_type} not found")
+            for attr, value in detail_data.items():
+                setattr(detail_obj, attr, value)
+            detail_obj.save()
 
 class OfferdetailAbsoluteUrlserializer(serializers.ModelSerializer):
     url = serializers.SerializerMethodField()
