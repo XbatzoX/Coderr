@@ -1,8 +1,9 @@
 from django.db.models import Min
 from rest_framework import generics, filters
 from rest_framework.exceptions import ValidationError
+from rest_framework.permissions import IsAuthenticated
 from offers_app.models import Offer
-from .serializers import OfferListSerializer, OfferCreateSerializer
+from .serializers import OfferListSerializer, OfferCreateSerializer, OfferRetrieveSerializer
 from .pagination import OfferPagination
 from .permissions import IsBusinessUserOrReadOnly
 
@@ -33,7 +34,7 @@ class OfferListView(generics.ListCreateAPIView):
 
     def _filter_by_creator(self, queryset):
         creator_id = self.request.query_params.get("creator_id")
-        if creator_id is None:
+        if not creator_id:
             return queryset
         try:
             return queryset.filter(user_id=int(creator_id))
@@ -42,7 +43,7 @@ class OfferListView(generics.ListCreateAPIView):
 
     def _filter_by_price(self, queryset):
         min_price = self.request.query_params.get("min_price")
-        if min_price is None:
+        if not min_price:
             return queryset
         try:
             return queryset.filter(min_price__gte=float(min_price))
@@ -51,9 +52,14 @@ class OfferListView(generics.ListCreateAPIView):
 
     def _filter_by_delivery_time(self, queryset):
         max_time = self.request.query_params.get("max_delivery_time")
-        if max_time is None:
+        if not max_time:
             return queryset
         try:
             return queryset.filter(min_delivery_time__lte=int(max_time))
         except ValueError:
             raise ValidationError({"max_delivery_time": "Must be a valid integer."})
+
+class OfferDetailView(generics.RetrieveAPIView):
+    queryset = Offer.objects.all()
+    serializer_class = OfferRetrieveSerializer
+    permission_classes = [IsAuthenticated]

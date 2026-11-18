@@ -99,3 +99,43 @@ class OfferCreateSerializer(serializers.ModelSerializer):
             OfferDetail.objects.create(offer=offer, **detail_data)
 
         return offer
+
+class OfferdetailAbsoluteUrlserializer(serializers.ModelSerializer):
+    url = serializers.SerializerMethodField()
+
+    class Meta:
+        model = OfferDetail
+        fields = ["id", "url"]
+
+    def get_url(self, obj):
+        request = self.context.get("request")
+        relative_url = f"/api/offerdetails/{obj.id}/"
+        return request.build_absolute_uri(relative_url) if request else relative_url
+
+class OfferRetrieveSerializer(serializers.ModelSerializer):
+    details = OfferdetailAbsoluteUrlserializer(many=True, read_only=True)
+    min_price = serializers.SerializerMethodField()
+    min_delivery_time = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Offer
+        fields = [
+            "id",
+            "user",
+            "title",
+            "image",
+            "description",
+            "created_at",
+            "updated_at",
+            "details",
+            "min_price",
+            "min_delivery_time",
+        ]
+
+    def get_min_price(self, obj):
+        prices = [detail.price for detail in obj.details.all()]
+        return min(prices) if prices else None
+
+    def get_min_delivery_time(self, obj):
+        times = [detail.delivery_time_in_days for detail in obj.details.all()]
+        return min(times) if times else None

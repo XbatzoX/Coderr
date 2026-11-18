@@ -106,5 +106,36 @@ class OfferListCreateTests(APITestCase):
         with self.assertRaises(Exception):
             self.client.get(self.url)
 
+class OfferDetailTests(APITestCase):
+    def setUp(self):
+        self.user = CustomUser.objects.create_user(
+            username="busi_detail", email="busi_d@test.de", password="pw", type="business"
+        )
+        self.token = Token.objects.create(user=self.user)
+        self.offer = Offer.objects.create(user=self.user, title="Logo Pack", description="Desc")
+        self.detail = OfferDetail.objects.create(
+            offer=self.offer, title="Basic", revisions=1,
+            delivery_time_in_days=5, price=50, features=["Logo"], offer_type="basic"
+        )
+        self.url = reverse("offer-detail", kwargs={"pk": self.offer.id})
+
+    def test_get_offer_detail_200(self):
+        self.client.credentials(HTTP_AUTHORIZATION="Token " + self.token.key)
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["min_price"], 50)
+        self.assertIn(f"/api/offerdetails/{self.detail.id}/", response.data["details"][0]["url"])
+        self.assertNotIn("user_details", response.data)
+
+    def test_get_offer_detail_unauthenticated_401(self):
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    @patch("offers_app.api.views.OfferDetailView.get_object")
+    def test_get_offer_detail_internal_server_error_500(self, mock_get_object):
+        self.client.credentials(HTTP_AUTHORIZATION="Token " + self.token.key)
+        mock_get_object.side_effect = Exception("Database failure")
+        with self.assertRaises(Exception):
+            self.client.get(self.url)
 
 
