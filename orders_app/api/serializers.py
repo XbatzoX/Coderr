@@ -12,7 +12,7 @@ class OrderSerializer(serializers.ModelSerializer):
             "features", "offer_type", "status", "created_at", "updated_at"
         ]
 
-class OrderCreateSerializer(serializers.serializer):
+class OrderCreateSerializer(serializers.Serializer):
     offer_detail_id = serializers.IntegerField()
 
     def validate_offer_detail_id(self, value):
