@@ -6,4 +6,5 @@ class IsCustomerUserForCreate(permissions.BasePermission):
             return False
         if request.method == "POST":
             return request.user.type == "customer"
+        return True
 
