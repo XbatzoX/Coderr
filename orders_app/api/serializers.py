@@ -37,3 +37,23 @@ class OrderCreateSerializer(serializers.Serializer):
 
     def to_representation(self, instance):
         return OrderSerializer(instance).data
+
+class OrderStatusUpdateSerializer(serializers.ModelSerializer):
+    status = serializers.ChoiceField(
+        choices = ["in_progress", "completed", "cancelled"],
+        required = True
+    )
+
+    class Meta:
+        model = Order
+        fields = ["status"]
+
+    def validate(self, attrs):
+        allowed_fields = {"status"}
+        extra_fields = set(self.initial_data.keys()) - allowed_fields
+        if extra_fields:
+            raise serializers.ValidationError(f"Inadmissible fields: {", ".join(extra_fields)}")
+        return attrs
+
+    def to_representation(self, instance):
+        return OrderSerializer(instance).data
