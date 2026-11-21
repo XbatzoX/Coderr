@@ -5,7 +5,7 @@ from .models import CustomUser
 # Register your models here.
 class CustomUserAdmin(UserAdmin):
     model = CustomUser
-    list_display = ["username", "email", "type", "is_staff"]
+    list_display = ["id", "username", "email", "type", "is_staff"]
 
     fieldsets = UserAdmin.fieldsets + (
         ("Additional info", {"fields": ("type",)}),
