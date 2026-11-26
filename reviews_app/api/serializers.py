@@ -11,6 +11,8 @@ class ReviewSerializer(serializers.ModelSerializer):
         read_only_fields = ["id", "reviewer", "created_at", "updated_at"]
 
     def validate_business_user(self, value):
+        if self.instance is not None:
+            raise serializers.ValidationError("business_user can not be changed.")
         if value.type != "business":
             raise serializers.ValidationError("Reviews can only written for businnes users.")
         return value

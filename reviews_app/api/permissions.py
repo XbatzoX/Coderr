@@ -7,3 +7,8 @@ class IsCustomerUserForReviewCreate(permissions.BasePermission):
         if request.method == "POST":
             return request.user.type == "customer"
         return True
+
+class IsReviewOwner(permissions.BasePermission):
+    def has_object_permission(self, request, view, obj):
+        return obj.reviewer == request.user
+    

@@ -1,8 +1,9 @@
 from rest_framework import generics, filters
 from rest_framework.exceptions import ValidationError
+from rest_framework.permissions import IsAuthenticated
 from reviews_app.models import Review
 from .serializers import ReviewSerializer
-from .permissions import IsCustomerUserForReviewCreate
+from .permissions import IsCustomerUserForReviewCreate, IsReviewOwner
 
 class ReviewListCreateView(generics.ListCreateAPIView):
     serializer_class = ReviewSerializer
@@ -36,3 +37,9 @@ class ReviewListCreateView(generics.ListCreateAPIView):
             return queryset.filter(reviewer_id=int(reviewer_id))
         except ValueError:
             raise ValidationError({"reviewer_id": "Must be a valid integer."})
+
+class ReviewDetailView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Review.objects.all()
+    serializer_class = ReviewSerializer
+    permission_classes = [IsAuthenticated, IsReviewOwner]
+    http_method_names = ["patch", "delete", "options", "head"]
