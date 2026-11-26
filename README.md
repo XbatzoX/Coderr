@@ -1,4 +1,3 @@
-# 🚀 Coderr Backend API
 
 # 🚀 Coderr Backend API
 
@@ -44,7 +43,7 @@ Coderr/
 ### 1. 📥 Clone the Repository
 
 ```bash
-git clone https://github.com
+git clone https://github.com/XbatzoX/Coderr.git
 cd Coderr
 ```
 
@@ -93,7 +92,7 @@ The API will be available at `http://127.0.0`.
 
 ## 🧪 Running Automated Tests
 
-The project includes **84 unit and integration tests** covering authentication, permissions, filtering, validation, rate limiting, and error handling across all apps.
+The project includes **83 unit and integration tests** covering authentication, permissions, filtering, validation, rate limiting, and error handling across all apps.
 
 Run the full test suite with:
 
