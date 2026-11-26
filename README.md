@@ -1,4 +1,10 @@
-# Coderr Backend API
+# 🚀 Coderr Backend API
+
+![Python](https://shields.io)
+![Django](https://shields.io)
+![Django REST Framework](https://shields.io)
+![Tests](https://shields.io)
+![Postman](https://shields.io)
 
 A modular RESTful backend built with **Django** and **Django REST Framework (DRF)** for **Coderr**, a freelance marketplace connecting customers with business service providers.
 
@@ -6,44 +12,44 @@ The API supports role-based authentication (`customer` and `business` accounts),
 
 ---
 
-## Tech Stack
+## 🛠️ Tech Stack
 
-- **Backend:** Python 3, Django, Django REST Framework
-- **Authentication:** DRF Token Authentication
-- **Filtering & Pagination:** `django-filter`, DRF Search/Ordering Filters, PageNumberPagination
-- **Database:** SQLite (default development setup)
-- **Testing:** Django `APITestCase` & `unittest.mock` (84 automated tests)
+- 🐍 **Backend:** Python 3, Django, Django REST Framework
+- 🔑 **Authentication:** DRF Token Authentication
+- 🔍 **Filtering & Pagination:** `django-filter`, DRF Search/Ordering Filters, `PageNumberPagination`
+- 🗄️ **Database:** SQLite (default development setup)
+- 🧪 **Testing:** Django `APITestCase` & `unittest.mock` (84 automated tests)
 
 ---
 
-## Project Structure
+## 📂 Project Structure
 
 ```text
 Coderr/
-├── base_info_app/      # Aggregated platform statistics endpoint (/api/base-info/)
-├── core/               # Project settings, root URL routing, and throttling configuration
-├── offers_app/         # Service offers and tiered packages (basic, standard, premium)
-├── orders_app/         # Order creation, status tracking, and business order counters
-├── Postman/            # Exported Postman collection and environment files
-├── profile_app/        # User profiles with automatic creation via Django signals
-├── reviews_app/        # Business profile ratings, reviews, and filtering
-├── user_auth_app/      # CustomUser model, registration, and token login
+├── 📊 base_info_app/      # Aggregated platform statistics endpoint (/api/base-info/)
+├── ⚙️ core/               # Project settings, root URL routing, and throttling configuration
+├── 💼 offers_app/         # Service offers and tiered packages (basic, standard, premium)
+├── 📦 orders_app/         # Order creation, status tracking, and business order counters
+├── 📮 Postman/            # Exported Postman collection and environment files
+├── 👤 profile_app/        # User profiles with automatic creation via Django signals
+├── ⭐ reviews_app/        # Business profile ratings, reviews, and filtering
+├── 🔐 user_auth_app/      # CustomUser model, registration, and token login
 ├── manage.py
 └── requirements.txt
 ```
 
 ---
 
-## Getting Started
+## ⚡ Getting Started
 
-### 1. Clone the Repository
+### 1. 📥 Clone the Repository
 
 ```bash
-git clone https://github.com/XbatzoX/Coderr.git
+git clone https://github.com
 cd Coderr
 ```
 
-### 2. Create and Activate a Virtual Environment
+### 2. 🌐 Create and Activate a Virtual Environment
 
 **Windows (PowerShell / CMD):**
 ```bash
@@ -57,26 +63,26 @@ python3 -m venv .venv
 source .venv/bin/activate
 ```
 
-### 3. Install Dependencies
+### 3. 📦 Install Dependencies
 
 ```bash
 pip install -r requirements.txt
 ```
 
-### 4. Apply Database Migrations
+### 4. 🗄️ Apply Database Migrations
 
 ```bash
 python manage.py makemigrations
 python manage.py migrate
 ```
 
-### 5. Create a Superuser (Optional)
+### 5. 👑 Create a Superuser (Optional)
 
 ```bash
 python manage.py createsuperuser
 ```
 
-### 6. Start the Development Server
+### 6. ▶️ Start the Development Server
 
 ```bash
 python manage.py runserver
@@ -86,7 +92,7 @@ The API will be available at `http://127.0.0`.
 
 ---
 
-## Running Automated Tests
+## 🧪 Running Automated Tests
 
 The project includes **84 unit and integration tests** covering authentication, permissions, filtering, validation, rate limiting, and error handling across all apps.
 
@@ -98,7 +104,7 @@ python manage.py test
 
 ---
 
-## Postman Collection & Environment
+## 📮 Postman Collection & Environment
 
 Ready-to-use Postman files are included in the [`Postman/`](https://github.com) directory for manual endpoint testing:
 
@@ -109,16 +115,16 @@ Ready-to-use Postman files are included in the [`Postman/`](https://github.com) 
 
 ---
 
-## API Endpoints Overview
+## 📡 API Endpoints Overview
 
-### Authentication (`user_auth_app`)
+### 🔐 Authentication (`user_auth_app`)
 
 | Method | Endpoint | Description | Permission |
 | :--- | :--- | :--- | :--- |
 | `POST` | `/api/registration/` | Register a new `customer` or `business` user | Public (`auth` throttle) |
 | `POST` | `/api/login/` | Authenticate user and retrieve API token | Public (`auth` throttle) |
 
-### Profiles (`profile_app`)
+### 👤 Profiles (`profile_app`)
 
 | Method | Endpoint | Description | Permission |
 | :--- | :--- | :--- | :--- |
@@ -127,7 +133,7 @@ Ready-to-use Postman files are included in the [`Postman/`](https://github.com) 
 | `GET` | `/api/profiles/business/` | List all business user profiles | Authenticated |
 | `GET` | `/api/profiles/customer/` | List all customer user profiles | Authenticated |
 
-### Offers (`offers_app`)
+### 💼 Offers (`offers_app`)
 
 | Method | Endpoint | Description | Permission |
 | :--- | :--- | :--- | :--- |
@@ -138,7 +144,7 @@ Ready-to-use Postman files are included in the [`Postman/`](https://github.com) 
 | `DELETE` | `/api/offers/{id}/` | Delete an offer | Offer Owner |
 | `GET` | `/api/offerdetails/{id}/` | Retrieve a single offer package detail | Authenticated |
 
-### Orders (`orders_app`)
+### 📦 Orders (`orders_app`)
 
 | Method | Endpoint | Description | Permission |
 | :--- | :--- | :--- | :--- |
@@ -148,7 +154,7 @@ Ready-to-use Postman files are included in the [`Postman/`](https://github.com) 
 | `GET` | `/api/order-count/{business_user_id}/` | Count active (`in_progress`) orders for a business user | Authenticated |
 | `GET` | `/api/completed-order-count/{business_user_id}/` | Count `completed` orders for a business user | Authenticated |
 
-### Reviews (`reviews_app`)
+### ⭐ Reviews (`reviews_app`)
 
 | Method | Endpoint | Description | Permission |
 | :--- | :--- | :--- | :--- |
@@ -157,7 +163,7 @@ Ready-to-use Postman files are included in the [`Postman/`](https://github.com) 
 | `PATCH` | `/api/reviews/{id}/` | Update rating or description of an existing review | Review Author |
 | `DELETE` | `/api/reviews/{id}/` | Delete a review | Review Author |
 
-### Platform Info (`base_info_app`)
+### 📊 Platform Info (`base_info_app`)
 
 | Method | Endpoint | Description | Permission |
 | :--- | :--- | :--- | :--- |
@@ -165,9 +171,10 @@ Ready-to-use Postman files are included in the [`Postman/`](https://github.com) 
 
 ---
 
-## Rate Limiting (Throttling)
+## 🛡️ Rate Limiting (Throttling)
 
 To protect the API against brute-force attacks and excessive traffic, Django REST Framework throttling is enabled:
-- **Anonymous users (`anon`):** `60/minute`
-- **Authenticated users (`user`):** `120/minute`
-- **Authentication endpoints (`auth` scope on `/api/login/` & `/api/registration/`):** `10/minute`
+
+- 🌐 **Anonymous users (`anon`):** `60/minute`
+- 👤 **Authenticated users (`user`):** `120/minute`
+- 🔐 **Authentication endpoints (`auth` scope on `/api/login/` & `/api/registration/`):** `10/minute`
