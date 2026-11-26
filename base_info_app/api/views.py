@@ -14,9 +14,9 @@ class BaseInfoView(APIView):
         avg_rating = Review.objects.aggregate(avg=Avg("rating"))["avg"]
         rounded_rating = round(avg_rating, 1) if avg_rating is not None else 0
         data = {
-            "review_ount": Review.objects.count(),
+            "review_count": Review.objects.count(),
             "average_rating": rounded_rating,
-            "business_profile_count": CustomUser.objects.filter(type="business"),
+            "business_profile_count": CustomUser.objects.filter(type="business").count(),
             "offer_count": Offer.objects.count()
         }
         return Response(data, status=status.HTTP_200_OK)
