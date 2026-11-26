@@ -1,0 +1,891 @@
+{
+  "info": {
+    "_postman_id": "52e37f33-2536-43e1-883c-761850c6746a",
+    "name": "Coderr-API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "56710093",
+    "_collection_link": "https://go.postman.co/collection/56710093-52e37f33-2536-43e1-883c-761850c6746a?source=collection_link"
+  },
+  "item": [
+    {
+      "name": "happy path",
+      "item": [
+        {
+          "name": "Auth",
+          "item": [
+            {
+              "name": "register_user",
+              "event": [
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "const firstName = pm.variables.replaceIn(\"{{$randomFirstName}}\");\r\nconst email = pm.variables.replaceIn(\"{{$randomEmail}}\");\r\n\r\npm.environment.set(\"username\", firstName);\r\npm.environment.set(\"email\", email);"
+                    ]
+                  }
+                },
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "const RESPONSE = pm.response;\r\n\r\npm.test(\"Statuscode ist 201 bei erfolgreicher Registrierung\", () => {\r\n    RESPONSE.to.have.status(201);\r\n});\r\n\r\npm.test(\"Resgistrierung erfolgreich: Token und email validiert\", () => {\r\n    const responseData = pm.response.json();\r\n\r\n    // Prüfen, ob der Status created ist 201\r\n    pm.expect(pm.response.code).to.eql(201);\r\n\r\n    // Prüfen, ob das Token im response existiert und ein string ist\r\n    pm.expect(responseData.token).to.be.exist;\r\n    pm.expect(responseData.token).to.be.a('string');\r\n\r\n    // Prüfen, ob die mail im response mitgesendet wurde\r\n    pm.expect(responseData.email).to.be.exist;\r\n    pm.expect(responseData.email).to.be.a('string');\r\n    pm.expect(responseData.email).to.eql(pm.environment.get(\"email\")); // Vergleicht die email aus dem response mit der email aus dem environment\r\n    pm.environment.set(\"id\", responseData.user_id); // Speichert den user_id in der environment variable\r\n});"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n  \"username\": \"{{username}}\",\r\n  \"email\": \"{{email}}\",\r\n  \"password\": \"examplePassword\",\r\n  \"repeated_password\": \"examplePassword\",\r\n  \"type\": \"customer\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{base_url}}api/registration/",
+                  "host": [
+                    "{{base_url}}api"
+                  ],
+                  "path": [
+                    "registration",
+                    ""
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "login",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "const RESPONSE = pm.response;\r\n\r\npm.test(\"Statuscode ist 200 bei erfolgreichem login\", () => {\r\n    RESPONSE.to.have.status(200);\r\n})\r\n\r\npm.test(\"Token ist übergeben worden bei erfolgreichem login\", () => {\r\n    try{\r\n        const RESPONSEJSON = RESPONSE.json();\r\n        pm.expect(RESPONSEJSON).to.have.property(\"token\");\r\n        // Wenn Prüfungen erfolgreich, dann token in Env sichern\r\n        pm.environment.set(\"user_token\", RESPONSEJSON.token); // Speichert den token in der Umgebungsvariable user_token\r\n\r\n        console.log(\"Token erfolgreich automatisert gespeichert: \" + pm.environment.get(\"user_token\"));\r\n    } catch (error){\r\n        pm.expect.fail(\"Response ist kein valides JSON \" + error);\r\n    }\r\n})"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"username\": \"{{username}}\",\r\n    \"password\": \"examplePassword\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{base_url}}api/login/",
+                  "host": [
+                    "{{base_url}}api"
+                  ],
+                  "path": [
+                    "login",
+                    ""
+                  ]
+                }
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "Coderr",
+          "item": [
+            {
+              "name": "profile_detail",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "const RESPONSE = pm.response;\r\n\r\npm.test(\"Statuscode ist 200 bei erfolgreicher Abfrage\", () => {\r\n    RESPONSE.to.have.status(200);\r\n})\r\n\r\n//Strukturvalidierung\r\npm.test(\"Struktur der Antwort ist korrekt\", () => {\r\n    if(RESPONSE.code != 200){\r\n        pm.expect.fail(\"Abfrage fehlgeschlagen, Statuscode ist nicht 200\");\r\n        return;\r\n    }\r\n    const resonseJson = RESPONSE.json();\r\n    pm.expect(resonseJson).to.be.an('object');\r\n});"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Token {{user_token}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}api/profile/{{id}}/",
+                  "host": [
+                    "{{base_url}}api"
+                  ],
+                  "path": [
+                    "profile",
+                    "{{id}}",
+                    ""
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "reviews",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "const RESPONSE = pm.response;\r\n\r\npm.test(\"Statuscode ist 200 bei erfolgreicher Abfrage\", () => {\r\n    RESPONSE.to.have.status(200);\r\n})\r\n\r\n//Strukturvalidierung\r\npm.test(\"Struktur der Antwort ist korrekt\", () => {\r\n    if(RESPONSE.code != 200){\r\n        pm.expect.fail(\"Abfrage fehlgeschlagen, Statuscode ist nicht 200\");\r\n        return;\r\n    }\r\n    const resonseJson = RESPONSE.json();\r\n    pm.expect(resonseJson).to.be.an('array');\r\n});"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Token {{user_token}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}api/reviews/",
+                  "host": [
+                    "{{base_url}}api"
+                  ],
+                  "path": [
+                    "reviews",
+                    ""
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "business-profiles_list",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "const RESPONSE = pm.response;\r\n\r\npm.test(\"Statuscode ist 200 bei erfolgreicher Abfrage\", () => {\r\n    RESPONSE.to.have.status(200);\r\n})\r\n\r\n//Strukturvalidierung\r\npm.test(\"Struktur der Antwort ist korrekt\", () => {\r\n    if(RESPONSE.code != 200){\r\n        pm.expect.fail(\"Abfrage fehlgeschlagen, Statuscode ist nicht 200\");\r\n        return;\r\n    }\r\n    const resonseJson = RESPONSE.json();\r\n    pm.expect(resonseJson).to.be.an('array');\r\n});"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Token {{user_token}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}api/profiles/business/",
+                  "host": [
+                    "{{base_url}}api"
+                  ],
+                  "path": [
+                    "profiles",
+                    "business",
+                    ""
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "customer-profiles_list",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "const RESPONSE = pm.response;\r\n\r\npm.test(\"Statuscode ist 200 bei erfolgreicher Abfrage\", () => {\r\n    RESPONSE.to.have.status(200);\r\n})\r\n\r\n//Strukturvalidierung\r\npm.test(\"Struktur der Antwort ist korrekt\", () => {\r\n    if(RESPONSE.code != 200){\r\n        pm.expect.fail(\"Abfrage fehlgeschlagen, Statuscode ist nicht 200\");\r\n        return;\r\n    }\r\n    const resonseJson = RESPONSE.json();\r\n    pm.expect(resonseJson).to.be.an('array');\r\n});"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Token {{user_token}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}api/profiles/customer/",
+                  "host": [
+                    "{{base_url}}api"
+                  ],
+                  "path": [
+                    "profiles",
+                    "customer",
+                    ""
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "offers_detail",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "const RESPONSE = pm.response;\r\n\r\npm.test(\"Statuscode ist 200 bei erfolgreicher Abfrage\", () => {\r\n    RESPONSE.to.have.status(200);\r\n})\r\n\r\n//Strukturvalidierung\r\npm.test(\"Struktur der Antwort ist korrekt\", () => {\r\n    if(RESPONSE.code != 200){\r\n        pm.expect.fail(\"Abfrage fehlgeschlagen, Statuscode ist nicht 200\");\r\n        return;\r\n    }\r\n    const resonseJson = RESPONSE.json();\r\n    pm.expect(resonseJson).to.be.an('object');\r\n});"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Token {{user_token}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}api/offers/1/",
+                  "host": [
+                    "{{base_url}}api"
+                  ],
+                  "path": [
+                    "offers",
+                    "1",
+                    ""
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "base_info",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "const RESPONSE = pm.response;\r\n\r\npm.test(\"Statuscode ist 200 bei erfolgreicher Abfrage\", () => {\r\n    RESPONSE.to.have.status(200);\r\n})\r\n\r\n//Strukturvalidierung\r\npm.test(\"Struktur der Antwort ist korrekt\", () => {\r\n    if(RESPONSE.code != 200){\r\n        pm.expect.fail(\"Abfrage fehlgeschlagen, Statuscode ist nicht 200\");\r\n        return;\r\n    }\r\n    const resonseJson = RESPONSE.json();\r\n    pm.expect(resonseJson).to.be.an('object');\r\n});"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Token {{user_token}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}api/base-info/",
+                  "host": [
+                    "{{base_url}}api"
+                  ],
+                  "path": [
+                    "base-info",
+                    ""
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "offerdetail_item",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "const RESPONSE = pm.response;\r\n\r\npm.test(\"Statuscode ist 200 bei erfolgreicher Abfrage\", () => {\r\n    RESPONSE.to.have.status(200);\r\n})\r\n\r\n//Strukturvalidierung\r\npm.test(\"Struktur der Antwort ist korrekt\", () => {\r\n    if(RESPONSE.code != 200){\r\n        pm.expect.fail(\"Abfrage fehlgeschlagen, Statuscode ist nicht 200\");\r\n        return;\r\n    }\r\n    const resonseJson = RESPONSE.json();\r\n    pm.expect(resonseJson).to.be.an('object');\r\n});"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Token {{user_token}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}api/offerdetails/1/",
+                  "host": [
+                    "{{base_url}}api"
+                  ],
+                  "path": [
+                    "offerdetails",
+                    "1",
+                    ""
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "profile_detail",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "const RESPONSE = pm.response;\r\n\r\npm.test(\"Statuscode ist 200 bei erfolgreicher Abfrage\", () => {\r\n    RESPONSE.to.have.status(200);\r\n})\r\n\r\n//Strukturvalidierung\r\npm.test(\"Struktur der Antwort ist korrekt\", () => {\r\n    if(RESPONSE.code != 200){\r\n        pm.expect.fail(\"Abfrage fehlgeschlagen, Statuscode ist nicht 200\");\r\n        return;\r\n    }\r\n    const resonseJson = RESPONSE.json();\r\n    pm.expect(resonseJson).to.be.an('object');\r\n});"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Token {{user_token}}"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"email\": \"changed_mail@hotmail.de\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{base_url}}api/profile/{{id}}/",
+                  "host": [
+                    "{{base_url}}api"
+                  ],
+                  "path": [
+                    "profile",
+                    "{{id}}",
+                    ""
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "offers_detail",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "const RESPONSE = pm.response;\r\n\r\npm.test(\"Statuscode ist 200 bei erfolgreicher Änderung\", () => {\r\n    RESPONSE.to.have.status(200);\r\n})\r\n\r\n//Strukturvalidierung\r\npm.test(\"Struktur der Antwort ist korrekt\", () => {\r\n    if(RESPONSE.code != 200){\r\n        pm.expect.fail(\"Änderung fehlgeschlagen, Statuscode ist nicht 200\");\r\n        return;\r\n    }\r\n    const resonseJson = RESPONSE.json();\r\n    pm.expect(resonseJson).to.be.an('object');\r\n});"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Token {{user_token}}"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n  \"title\": \"Updated Grafikdesign-Paket\",\r\n  \"details\": [\r\n    {\r\n      \"title\": \"Basic Design Updated\",\r\n      \"revisions\": 3,\r\n      \"delivery_time_in_days\": 6,\r\n      \"price\": 120,\r\n      \"features\": [\r\n        \"Logo Design\",\r\n        \"Flyer\"\r\n      ],\r\n      \"offer_type\": \"basic\"\r\n    }\r\n  ]\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{base_url}}api/offers/1/",
+                  "host": [
+                    "{{base_url}}api"
+                  ],
+                  "path": [
+                    "offers",
+                    "1",
+                    ""
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "offers",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "const RESPONSE = pm.response;\r\n\r\npm.test(\"Statuscode ist 201 bei erfolgreicher Erstellung\", () => {\r\n    RESPONSE.to.have.status(201);\r\n})\r\n\r\n//Strukturvalidierung\r\npm.test(\"Struktur der Antwort ist korrekt\", () => {\r\n    if(RESPONSE.code != 201){\r\n        pm.expect.fail(\"Erstellung fehlgeschlagen, Statuscode ist nicht 201\");\r\n        return;\r\n    }\r\n    const resonseJson = RESPONSE.json();\r\n    pm.expect(resonseJson).to.be.an('object');\r\n});"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Token {{user_token}}"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n  \"title\": \"Game-Paket\",\r\n  \"image\": null,\r\n  \"description\": \"Ein umfassendes Game-Paket für Unternehmen.\",\r\n  \"details\": [\r\n    {\r\n      \"title\": \"Basic Design\",\r\n      \"revisions\": 2,\r\n      \"delivery_time_in_days\": 5,\r\n      \"price\": 100,\r\n      \"features\": [\r\n        \"Logo Design\",\r\n        \"Visitenkarte\"\r\n      ],\r\n      \"offer_type\": \"basic\"\r\n    },\r\n    {\r\n      \"title\": \"Standard Design\",\r\n      \"revisions\": 5,\r\n      \"delivery_time_in_days\": 7,\r\n      \"price\": 200,\r\n      \"features\": [\r\n        \"Logo Design\",\r\n        \"Visitenkarte\",\r\n        \"Briefpapier\"\r\n      ],\r\n      \"offer_type\": \"standard\"\r\n    },\r\n    {\r\n      \"title\": \"Premium Design\",\r\n      \"revisions\": 10,\r\n      \"delivery_time_in_days\": 10,\r\n      \"price\": 500,\r\n      \"features\": [\r\n        \"Logo Design\",\r\n        \"Visitenkarte\",\r\n        \"Briefpapier\",\r\n        \"Flyer\"\r\n      ],\r\n      \"offer_type\": \"premium\"\r\n    }\r\n  ]\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{base_url}}api/offers/",
+                  "host": [
+                    "{{base_url}}api"
+                  ],
+                  "path": [
+                    "offers",
+                    ""
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "orders",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "const RESPONSE = pm.response;\r\n\r\npm.test(\"Statuscode ist 201 bei erfolgreicher Erstellung\", () => {\r\n    RESPONSE.to.have.status(201);\r\n})\r\n\r\n//Strukturvalidierung\r\npm.test(\"Struktur der Antwort ist korrekt\", () => {\r\n    if(RESPONSE.code != 201){\r\n        pm.expect.fail(\"Erstellung fehlgeschlagen, Statuscode ist nicht 201\");\r\n        return;\r\n    }\r\n    const resonseJson = RESPONSE.json();\r\n    pm.expect(resonseJson).to.be.an('object');\r\n});"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Token {{user_token}}"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"offer_detail_id\": 4\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{base_url}}api/orders/",
+                  "host": [
+                    "{{base_url}}api"
+                  ],
+                  "path": [
+                    "orders",
+                    ""
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "reviews",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "const RESPONSE = pm.response;\r\n\r\npm.test(\"Statuscode ist 201 bei erfolgreicher Erstellung\", () => {\r\n    RESPONSE.to.have.status(201);\r\n})\r\n\r\n//Strukturvalidierung\r\npm.test(\"Struktur der Antwort ist korrekt\", () => {\r\n    if(RESPONSE.code != 201){\r\n        pm.expect.fail(\"Erstellung fehlgeschlagen, Statuscode ist nicht 201\");\r\n        return;\r\n    }\r\n    const resonseJson = RESPONSE.json();\r\n    pm.expect(resonseJson).to.be.an('object');\r\n});"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Token {{user_token}}"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n  \"business_user\": 4,\r\n  \"rating\": 4,\r\n  \"description\": \"Alles war toll!\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{base_url}}api/reviews/",
+                  "host": [
+                    "{{base_url}}api"
+                  ],
+                  "path": [
+                    "reviews",
+                    ""
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "reviews",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "const RESPONSE = pm.response;\r\n\r\npm.test(\"Statuscode ist 200 bei erfolgreicher Erstellung\", () => {\r\n    RESPONSE.to.have.status(200);\r\n})\r\n\r\n//Strukturvalidierung\r\npm.test(\"Struktur der Antwort ist korrekt\", () => {\r\n    if(RESPONSE.code != 200){\r\n        pm.expect.fail(\"Erstellung fehlgeschlagen, Statuscode ist nicht 201\");\r\n        return;\r\n    }\r\n    const resonseJson = RESPONSE.json();\r\n    pm.expect(resonseJson).to.be.an('object');\r\n});"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Token {{user_token}}"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n  \"rating\": 5,\r\n  \"description\": \"Noch besser als erwartet!\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{base_url}}api/reviews/1/",
+                  "host": [
+                    "{{base_url}}api"
+                  ],
+                  "path": [
+                    "reviews",
+                    "1",
+                    ""
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "reviews",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "const RESPONSE = pm.response;\r\n\r\npm.test(\"Statuscode ist 204 bei erfolgreicher Löschung\", () => {\r\n    RESPONSE.to.have.status(204);\r\n})\r\n\r\n//Strukturvalidierung\r\npm.test(\"Struktur der Antwort ist korrekt\", () => {\r\n    if(RESPONSE.code != 204){\r\n        pm.expect.fail(\"Abfrage fehlgeschlagen, Statuscode ist nicht 204\");\r\n        return;\r\n    }\r\n    const resonseText = RESPONSE.text();\r\n    pm.expect(resonseText).to.be.empty;\r\n});"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "DELETE",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Token {{user_token}}"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{base_url}}api/reviews/1/",
+                  "host": [
+                    "{{base_url}}api"
+                  ],
+                  "path": [
+                    "reviews",
+                    "1",
+                    ""
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "orders_detail",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "const RESPONSE = pm.response;\r\n\r\npm.test(\"Statuscode ist 200 bei erfolgreicher Änderung\", () => {\r\n    RESPONSE.to.have.status(200);\r\n})\r\n\r\n//Strukturvalidierung\r\npm.test(\"Struktur der Antwort ist korrekt\", () => {\r\n    if(RESPONSE.code != 200){\r\n        pm.expect.fail(\"Änderung fehlgeschlagen, Statuscode ist nicht 200\");\r\n        return;\r\n    }\r\n    const resonseJson = RESPONSE.json();\r\n    pm.expect(resonseJson).to.be.an('object');\r\n});"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Token 36f5acc08f1f7802d4dc5d4cb2fb86f70d94a618"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"status\": \"completed\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{base_url}}api/orders/3/",
+                  "host": [
+                    "{{base_url}}api"
+                  ],
+                  "path": [
+                    "orders",
+                    "3",
+                    ""
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "orders",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "const RESPONSE = pm.response;\r\n\r\npm.test(\"Statuscode ist 200 bei erfolgreicher Abfrage\", () => {\r\n    RESPONSE.to.have.status(200);\r\n})\r\n\r\n//Strukturvalidierung\r\npm.test(\"Struktur der Antwort ist korrekt\", () => {\r\n    if(RESPONSE.code != 200){\r\n        pm.expect.fail(\"Abfrage fehlgeschlagen, Statuscode ist nicht 200\");\r\n        return;\r\n    }\r\n    const resonseJson = RESPONSE.json();\r\n    pm.expect(resonseJson).to.be.an('array');\r\n});"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Token {{user_token}}"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"offer_detail_id\": 1\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{base_url}}api/orders/",
+                  "host": [
+                    "{{base_url}}api"
+                  ],
+                  "path": [
+                    "orders",
+                    ""
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "order_count",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "const RESPONSE = pm.response;\r\n\r\npm.test(\"Statuscode ist 200 bei erfolgreicher Abfrage\", () => {\r\n    RESPONSE.to.have.status(200);\r\n})\r\n\r\n//Strukturvalidierung\r\npm.test(\"Struktur der Antwort ist korrekt\", () => {\r\n    if(RESPONSE.code != 200){\r\n        pm.expect.fail(\"Abfrage fehlgeschlagen, Statuscode ist nicht 200\");\r\n        return;\r\n    }\r\n    const resonseJson = RESPONSE.json();\r\n    pm.expect(resonseJson).to.be.an('object');\r\n});"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Token {{user_token}}"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{base_url}}api/order-count/1/",
+                  "host": [
+                    "{{base_url}}api"
+                  ],
+                  "path": [
+                    "order-count",
+                    "1",
+                    ""
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "completed_order_count",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "const RESPONSE = pm.response;\r\n\r\npm.test(\"Statuscode ist 200 bei erfolgreicher Abfrage\", () => {\r\n    RESPONSE.to.have.status(200);\r\n})\r\n\r\n//Strukturvalidierung\r\npm.test(\"Struktur der Antwort ist korrekt\", () => {\r\n    if(RESPONSE.code != 200){\r\n        pm.expect.fail(\"Abfrage fehlgeschlagen, Statuscode ist nicht 200\");\r\n        return;\r\n    }\r\n    const resonseJson = RESPONSE.json();\r\n    pm.expect(resonseJson).to.be.an('object');\r\n});"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Token {{user_token}}"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{base_url}}api/completed-order-count/2/",
+                  "host": [
+                    "{{base_url}}api"
+                  ],
+                  "path": [
+                    "completed-order-count",
+                    "2",
+                    ""
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "offers_detail",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "const RESPONSE = pm.response;\r\n\r\npm.test(\"Statuscode ist 204 bei erfolgreicher Löschung\", () => {\r\n    RESPONSE.to.have.status(204);\r\n})\r\n\r\n//Strukturvalidierung\r\npm.test(\"Struktur der Antwort ist korrekt\", () => {\r\n    if(RESPONSE.code != 204){\r\n        pm.expect.fail(\"Abfrage fehlgeschlagen, Statuscode ist nicht 204\");\r\n        return;\r\n    }\r\n    const resonseText = RESPONSE.text();\r\n    pm.expect(resonseText).to.be.empty;\r\n});"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "DELETE",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Token {{user_token}}"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{base_url}}api/offers/3/",
+                  "host": [
+                    "{{base_url}}api"
+                  ],
+                  "path": [
+                    "offers",
+                    "3",
+                    ""
+                  ]
+                }
+              },
+              "response": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "unhappy path",
+      "item": [
+        {
+          "name": "Auth",
+          "item": []
+        },
+        {
+          "name": "Coderr",
+          "item": []
+        }
+      ]
+    }
+  ]
+}
