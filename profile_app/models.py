@@ -1,9 +1,10 @@
 from django.db import models
 from django.conf import settings
 
-# Create your models here.
 
 class Profile(models.Model):
+    """Profile model storing additional user information linked to a CustomUser."""
+
     user = models.OneToOneField(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
@@ -20,5 +21,6 @@ class Profile(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
+        """Return a string representation displaying the profile owner's username."""
         return f"Profile of {self.user.username}"
 

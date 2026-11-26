@@ -8,6 +8,8 @@ from .pagination import OfferPagination
 from .permissions import IsBusinessUserOrReadOnly, IsOfferOwnerOrReadOnly
 
 class OfferListView(generics.ListCreateAPIView):
+    """API view for listing filtered offers and creating new offers."""
+
     permission_classes = [IsBusinessUserOrReadOnly]
     pagination_class = OfferPagination
     filter_backends = [filters.SearchFilter, filters.OrderingFilter]
@@ -16,14 +18,17 @@ class OfferListView(generics.ListCreateAPIView):
     ordering = ["-updated_at"]
 
     def get_serializer_class(self):
+        """Return OfferCreateSerializer for POST requests and OfferListSerializer otherwise."""
         if self.request.method == "POST":
             return OfferCreateSerializer
         return OfferListSerializer
 
     def perform_create(self, serializer):
+        """Assign the authenticated business user as the creator of the offer."""
         serializer.save(user=self.request.user)
 
     def get_queryset(self):
+        """Return offers annotated with minimum price and delivery time and apply query filters."""
         queryset = Offer.objects.annotate(
             min_price = Min("details__price"),
             min_delivery_time = Min("details__delivery_time_in_days")
@@ -33,6 +38,7 @@ class OfferListView(generics.ListCreateAPIView):
         return self._filter_by_delivery_time(queryset)
 
     def _filter_by_creator(self, queryset):
+        """Filter the offer queryset by the creator_id query parameter."""
         creator_id = self.request.query_params.get("creator_id")
         if not creator_id:
             return queryset
@@ -42,6 +48,7 @@ class OfferListView(generics.ListCreateAPIView):
             raise ValidationError({"creator_id": "Must be a valid integer."})
 
     def _filter_by_price(self, queryset):
+        """Filter the offer queryset by the min_price query parameter."""
         min_price = self.request.query_params.get("min_price")
         if not min_price:
             return queryset
@@ -51,6 +58,7 @@ class OfferListView(generics.ListCreateAPIView):
             raise ValidationError({"min_price": "Must be a valid number."})
 
     def _filter_by_delivery_time(self, queryset):
+        """Filter the offer queryset by the max_delivery_time query parameter."""
         max_time = self.request.query_params.get("max_delivery_time")
         if not max_time:
             return queryset
@@ -60,15 +68,20 @@ class OfferListView(generics.ListCreateAPIView):
             raise ValidationError({"max_delivery_time": "Must be a valid integer."})
 
 class OfferDetailView(generics.RetrieveUpdateDestroyAPIView):
+    """API view for retrieving, updating, and deleting a single offer."""
+
     queryset = Offer.objects.all()
     permission_classes = [IsAuthenticated, IsOfferOwnerOrReadOnly]
 
     def get_serializer_class(self):
+        """Return OfferCreateSerializer for write methods and OfferRetrieveSerializer for GET."""
         if self.request.method in ["PATCH", "PUT"]:
             return OfferCreateSerializer
         return OfferRetrieveSerializer
 
 class OfferDetailItemView(generics.RetrieveAPIView):
+    """API view for retrieving a single offer package detail item."""
+    
     queryset = OfferDetail.objects.all()
     serializer_class = OfferDetailSerializer
     permission_classes = [IsAuthenticated]

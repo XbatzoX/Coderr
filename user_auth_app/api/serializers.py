@@ -3,6 +3,8 @@ from django.contrib.auth import authenticate
 from user_auth_app.models import CustomUser
 
 class RegistrationSerializer(serializers.ModelSerializer):
+    """Serializer for validating and registering new user accounts."""
+
     repeated_password = serializers.CharField(write_only=True)
 
     class Meta:
@@ -13,6 +15,7 @@ class RegistrationSerializer(serializers.ModelSerializer):
         }
 
     def validate(self, data):
+        """Ensure matching passwords and a unique email address."""
         if data["password"] != data["repeated_password"]:
             raise serializers.ValidationError({"password": "Passwords do not match"})
 
@@ -22,6 +25,7 @@ class RegistrationSerializer(serializers.ModelSerializer):
         return data
 
     def create(self, validated_data):
+        """Create and return a new CustomUser instance."""
         validated_data.pop("repeated_password")
 
         user = CustomUser.objects.create_user(
@@ -33,10 +37,13 @@ class RegistrationSerializer(serializers.ModelSerializer):
         return user
 
 class LoginSerializer(serializers.Serializer):
+    """Serializer for authenticating users with username and password."""
+
     username = serializers.CharField()
     password = serializers.CharField(write_only=True)
 
     def validate(self, data):
+        """Authenticate credentials and attach the user instance to data."""
         username = data.get("username")
         password = data.get("password")
 

@@ -1,8 +1,9 @@
 from django.db import models
 from django.conf import settings
 
-# Create your models here.
 class Offer(models.Model):
+    """Offer model representing a service package created by a business user."""
+
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
@@ -15,9 +16,12 @@ class Offer(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
+        """Return the title of the offer."""
         return self.title
 
 class OfferDetail(models.Model):
+    """Model representing a specific pricing and feature tier for an Offer."""
+
     OFFER_TYPE_CHOICES = [
         ("basic", "Basic"),
         ("standard", "Standard"),
@@ -37,4 +41,5 @@ class OfferDetail(models.Model):
     offer_type = models.CharField(max_length=20, choices=OFFER_TYPE_CHOICES)
 
     def __str__(self):
+        """Return a string representation combining the offer title and tier type."""
         return f"{self.offer.title} - {self.offer_type}"

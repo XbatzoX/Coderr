@@ -6,12 +6,13 @@ from rest_framework.authtoken.models import Token
 from .serializers import RegistrationSerializer, LoginSerializer
 
 class RegistrationView(APIView):
+    """API view for registering new users and returning an auth token."""
     permission_classes = [AllowAny]
     throttle_scope = "auth"
 
     def post(self, request):
+        """Handle user registration requests and return token data."""
         serializer = RegistrationSerializer(data=request.data)
-
         if serializer.is_valid():
             try:
                 user = serializer.save()
@@ -23,12 +24,14 @@ class RegistrationView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class LoginView(APIView):
+    """API view for authenticating users and returning an auth token."""
+
     permission_classes = [AllowAny]
     throttle_scope = "auth"
 
     def post(self, request):
+        """Validate user credentials and return token and user details."""
         serializer = LoginSerializer(data=request.data)
-
         if serializer.is_valid():
             try:
                 user = serializer.validated_data["user"]

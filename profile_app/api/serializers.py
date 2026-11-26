@@ -3,6 +3,8 @@ from user_auth_app.models import CustomUser
 from profile_app.models import Profile
 
 class ProfileSerializer(serializers.ModelSerializer):
+    """Serializer for retrieving and updating user profile details including email."""
+
     username = serializers.CharField(source="user.username", read_only=True)
     email = serializers.EmailField(source="user.email")
     type = serializers.CharField(source="user.type", read_only=True)
@@ -26,12 +28,14 @@ class ProfileSerializer(serializers.ModelSerializer):
         read_only_fields = ["user", "created_at"]
 
     def validate_email(self, value):
+        """Ensure the email address is unique across all other users."""
         user = self.instance.user if self.instance else None
         if CustomUser.objects.exclude(pk=user.pk if user else None).filter(email=value).exists():
             raise serializers.ValidationError("This email is already in use.")
         return value
 
     def update(self, instance, validated_data):
+        """Update the linked user's email if provided and save the profile fields."""
         user_data = validated_data.pop("user", {})
         email = user_data.get("email")
 
@@ -42,6 +46,8 @@ class ProfileSerializer(serializers.ModelSerializer):
         return super().update(instance, validated_data)
 
 class BusinessProfileSerializer(serializers.ModelSerializer):
+    """Serializer for listing public business user profile details."""
+
     username = serializers.CharField(source="user.username", read_only=True)
     type = serializers.CharField(source="user.type", read_only=True)
 
@@ -61,6 +67,8 @@ class BusinessProfileSerializer(serializers.ModelSerializer):
         ]
 
 class CustomerProfileserializer(serializers.ModelSerializer):
+    """Serializer for listing public customer user profile details."""
+    
     username = serializers.CharField(source="user.username", read_only=True)
     uploaded_at = serializers.DateTimeField(source="created_at", read_only=True)
     type = serializers.CharField(source="user.type", read_only=True)
