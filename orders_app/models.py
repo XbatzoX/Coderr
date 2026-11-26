@@ -2,6 +2,8 @@ from django.db import models
 from django.conf import settings
 
 class Order(models.Model):
+    """Order model representing a purchased service package between a customer and a business user."""
+
     STATUS_CHOICES = [
         ("in_progress", "In Progress"),
         ("completed", "Completed"),
@@ -25,4 +27,5 @@ class Order(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
+        """Return a string representation displaying the order ID and title."""
         return f"Order #{self.id}: {self.title}"

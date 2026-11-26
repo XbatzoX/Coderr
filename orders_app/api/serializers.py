@@ -4,6 +4,8 @@ from offers_app.models import OfferDetail
 from orders_app.models import Order
 
 class OrderSerializer(serializers.ModelSerializer):
+    """Serializer for representing full order details."""
+
     class Meta:
         model = Order
         fields = [
@@ -13,15 +15,19 @@ class OrderSerializer(serializers.ModelSerializer):
         ]
 
 class OrderCreateSerializer(serializers.Serializer):
+    """Serializer for creating a new order from a selected OfferDetail package."""
+
     offer_detail_id = serializers.IntegerField()
 
     def validate_offer_detail_id(self, value):
+        """Retrieve and return the OfferDetail instance or raise NotFound if missing."""
         try:
             return OfferDetail.objects.get(pk=value)
         except OfferDetail.DoesNotExist:
             raise NotFound("OfferDetail with this ID was not found.")
 
     def create(self, validated_data):
+        """Create and return a new Order snapshot based on the chosen OfferDetail."""
         detail = validated_data["offer_detail_id"]
         customer = self.context["request"].user
         return Order.objects.create(
@@ -36,9 +42,12 @@ class OrderCreateSerializer(serializers.Serializer):
         )
 
     def to_representation(self, instance):
+        """Serialize the created Order instance using OrderSerializer."""
         return OrderSerializer(instance).data
 
 class OrderStatusUpdateSerializer(serializers.ModelSerializer):
+    """Serializer for validating and updating the status of an order."""
+
     status = serializers.ChoiceField(
         choices = ["in_progress", "completed", "cancelled"],
         required = True
@@ -49,6 +58,7 @@ class OrderStatusUpdateSerializer(serializers.ModelSerializer):
         fields = ["status"]
 
     def validate(self, attrs):
+        """Reject any request payload containing fields other than status."""
         allowed_fields = {"status"}
         extra_fields = set(self.initial_data.keys()) - allowed_fields
         if extra_fields:
@@ -56,4 +66,5 @@ class OrderStatusUpdateSerializer(serializers.ModelSerializer):
         return attrs
 
     def to_representation(self, instance):
+        """Serialize the updated Order instance using OrderSerializer."""
         return OrderSerializer(instance).data

@@ -8,9 +8,12 @@ from offers_app.models import Offer
 from reviews_app.models import Review
 
 class BaseInfoView(APIView):
+    """API view returning aggregated platform-wide statistics for the landing page."""
+
     permission_classes = [AllowAny]
 
     def get(self, request):
+        """Calculate and return review count, average rating, business profile count, and offer count."""
         avg_rating = Review.objects.aggregate(avg=Avg("rating"))["avg"]
         rounded_rating = round(avg_rating, 1) if avg_rating is not None else 0
         data = {
