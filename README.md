@@ -1,10 +1,9 @@
 # 🚀 Coderr Backend API
 
-![Python](https://shields.io)
-![Django](https://shields.io)
-![Django REST Framework](https://shields.io)
-![Tests](https://shields.io)
-![Postman](https://shields.io)
+# 🚀 Coderr Backend API
+
+`🐍 Python 3.x` • `🌿 Django 5.x` • `🔌 Django REST Framework` • `✅ 83 Tests Passing` • `📮 Postman Collection Included`
+
 
 A modular RESTful backend built with **Django** and **Django REST Framework (DRF)** for **Coderr**, a freelance marketplace connecting customers with business service providers.
 
