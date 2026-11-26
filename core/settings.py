@@ -1,3 +1,5 @@
+import sys
+
 """
 Django settings for core project.
 
@@ -147,7 +149,24 @@ REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.AllowAny',
     ],
+    'DEFAULT_THROTTLE_CLASSES': [
+        'rest_framework.throttling.AnonRateThrottle',
+        'rest_framework.throttling.UserRateThrottle',
+        'rest_framework.throttling.ScopedRateThrottle',
+    ],
+    'DEFAULT_THROTTLE_RATES': {
+        'anon': '60/minute',
+        'user': '120/minute',
+        'auth': '10/minute',
+    }
 }
+
+if "test" in sys.argv:
+    REST_FRAMEWORK['DEFAULT_THROTTLE_RATES'] = {
+        'anon': '10000/minute',
+        'user': '10000/minute',
+        'auth': '10000/minute',
+    }
 
 CSRF_TRUSTED_ORIGINS = [
   'http://127.0.0.1:5500',
